@@ -1,0 +1,34 @@
+from flask import Flask, render_template, request, jsonify
+import stripe
+
+app = Flask(__name__)
+
+# Set your Stripe secret key
+stripe.api_key = 'sk_test_51Pirb1Fvrb9wZDmwL72HssnY7MlC00VBWKPTXLqHWgFXr5XLEfwYhvx1CSf17IiVaa9h0D2mpBjvAWBg2A9NWsZi00NNgt4L6S'
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/charge', methods=['POST'])
+def charge():
+    try:
+        # Get the payment information from the request
+        amount = 5000  # Amount in cents ($50.00)
+        token = request.form['stripeToken']
+
+        # Create a charge
+        charge = stripe.Charge.create(
+            amount=amount,
+            currency='usd',
+            description='Example Charge',
+            source=token,
+        )
+
+        return jsonify({'status': 'success'})
+
+    except stripe.error.CardError as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+if __name__ == '__main__':
+    app.run(debug=True)
